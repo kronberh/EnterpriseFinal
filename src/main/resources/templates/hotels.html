@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head>
+    <title>Hotels</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="navbar bg-secondary text-light">
+    <div class="container-fluid">
+        <img height="35rm" width="35rm" class="rounded" src="https://static.vecteezy.com/system/resources/previews/036/594/092/non_2x/man-empty-avatar-photo-placeholder-for-social-networks-resumes-forums-and-dating-sites-male-and-female-no-photo-images-for-unfilled-user-profile-free-vector.jpg" alt="pfp">
+        <h4 sec:authentication="name"></h4>
+        <div class="btn-group">
+            <a href="/myrooms" class="btn btn-warning">My bookings</a>
+            <a href="/logout" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+</nav>
+<div class="container mt-5">
+    <h1 class="text-center">Hotels</h1>
+    <table class="table table-light table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Location</th>
+                <th scope="col">Rating</th>
+                <th scope="col">Rooms</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="table-secondary">
+                <td>
+                    <input type="text" id="name" class="form-control" placeholder="Name" required/>
+                </td>
+                <td>
+                    <input type="text" id="location" class="form-control" placeholder="Location" required/>
+                </td>
+                <td>
+                    <input type="number" id="rating" min="0" max="5" step="0.1" class="form-control" placeholder="Rating" required/>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-success btn-sm" onclick="submitHotel()">Add Hotel</button>
+                </td>
+            </tr>
+            <tr th:each="hotel : ${hotels}">
+                <td th:text="${hotel.name}"></td>
+                <td th:text="${hotel.location}"></td>
+                <td th:text="${hotel.rating}"></td>
+                <td>
+                    <a th:href="@{/rooms(hotelId=${hotel.id})}" class="btn btn-secondary btn-sm">
+                        See rooms
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    function submitHotel() {
+        const name = document.getElementById('name').value;
+        const hotelLocation = document.getElementById('location').value;
+        const rating = parseFloat(document.getElementById('rating').value);
+
+        fetch('/api/hotels', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, hotelLocation, rating })
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    return response.text().then(text => alert('Error: ' + text));
+                }
+            })
+            .catch(error => alert('Error: ' + error));
+    }
+</script>
+</body>
+</html>

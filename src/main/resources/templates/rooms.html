@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head>
+    <title>Hotels</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="navbar bg-secondary text-light">
+    <div class="container-fluid">
+        <img height="35rm" width="35rm" class="rounded" src="https://static.vecteezy.com/system/resources/previews/036/594/092/non_2x/man-empty-avatar-photo-placeholder-for-social-networks-resumes-forums-and-dating-sites-male-and-female-no-photo-images-for-unfilled-user-profile-free-vector.jpg" alt="pfp">
+        <h4 sec:authentication="name"></h4>
+        <div class="btn-group">
+            <a href="/myrooms" class="btn btn-warning">My bookings</a>
+            <a href="/logout" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+</nav>
+<div class="container mt-5">
+    <h1 class="text-center">Rooms</h1>
+    <table class="table table-light table-striped table-hover">
+        <thead class="table-dark">
+        <tr>
+            <th scope="col">Room #</th>
+            <th scope="col">Type</th>
+            <th scope="col">Price per night</th>
+            <th scope="col">Bookings</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr class="table-secondary">
+                <td>
+                    <input id="number" min="1" step="1" type="number" class="form-control" placeholder="Room #" required>
+                </td>
+                <td>
+                    <input id="type" type="text" class="form-control" placeholder="Type" required>
+                </td>
+                <td>
+                    <input id="price" type="number" class="form-control" placeholder="Price" step="0.01" min="0" required>
+                </td>
+                <td>
+                    <button class="btn btn-success btn-sm" onclick="submitRoom()">Add Room</button>
+                </td>
+            </tr>
+            <tr th:each="room : ${rooms}">
+                <td th:text="${room.number}"></td>
+                <td th:text="${room.type}"></td>
+                <td th:text="${room.pricePerNight}"></td>
+                <td>
+                    <div th:switch="${roomBookingMap[room.id]}">
+                        <a th:case="null"
+                           th:href="@{/book-room/{id}(id=${room.id})}"
+                           class="btn btn-primary btn-sm">
+                            Book
+                        </a>
+                        <a th:case="${currentUsername}" th:href="@{/unbook-room/{id}(id=${room.id})}" class="btn btn-warning btn-sm">
+                            Unbook
+                        </a>
+                        <a th:case="*" class="btn btn-light btn-sm disabled" href="#" tabindex="-1" aria-disabled="true">
+                            Occupied
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <a href="/hotels">Back to hotels</a>
+</div>
+<script th:inline="javascript">
+    function submitRoom() {
+        const number = document.getElementById('number').value;
+        const type = document.getElementById('type').value;
+        const price = parseFloat(document.getElementById('price').value);
+        const hotel = [[${hotel}]];
+
+        fetch('/api/rooms', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ hotel, number, type, pricePerNight: price })
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    return response.text().then(text => alert('Error: ' + text));
+                }
+            })
+            .catch(error => alert('Error: ' + error));
+    }
+</script>
+</body>
+</html>
